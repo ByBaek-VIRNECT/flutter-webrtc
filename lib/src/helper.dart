@@ -179,4 +179,23 @@ class Helper {
       throw Exception('requestCapturePermission only support for Android');
     }
   }
+
+  static Future<void> stopVideoCapturer(MediaStreamTrack videoTrack) async {
+    if (WebRTC.platformIsAndroid) {
+      await WebRTC.invokeMethod(
+        'stopVideoCapturer',
+        <String, dynamic>{'trackId': videoTrack.id},
+      );
+    } else {
+      throw Exception('stopVideoCapturer only support for Android');
+    }
+  }
+
+  static Future<void> reStartVideoCapturer() async {
+    if (WebRTC.platformIsAndroid) {
+      await WebRTC.invokeMethod('reStartCamera');
+    } else {
+      throw Exception('reStartVideoCapturer only support for Android');
+    }
+  }
 }

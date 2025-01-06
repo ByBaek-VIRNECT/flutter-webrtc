@@ -1042,4 +1042,28 @@ public class GetUserMediaImpl {
         }
         return -1;
     }
+
+    void stopVideoCapturerSync(String id) {
+        synchronized (mVideoCapturers) {
+            VideoCapturerInfo info = mVideoCapturers.get(id);
+            if (info != null) {
+                try {
+                    info.capturer.stopCapture();
+                } catch (InterruptedException e) {
+                    Log.e(TAG, "stopVideoCapturerSync() Failed to stop video capturer");
+                } finally {
+                    SurfaceTextureHelper helper = mSurfaceTextureHelpers.get(id);
+                    if (helper != null) {
+                        helper.stopListening();
+                    }
+                }
+            }
+        }
+    }
+
+    void stopVideoCapturer(String id) {
+        new Thread(() -> {
+            stopVideoCapturerSync(id);
+        }).start();
+    }
 }
