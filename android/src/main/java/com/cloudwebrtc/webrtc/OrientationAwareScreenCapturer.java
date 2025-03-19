@@ -174,7 +174,7 @@ public class OrientationAwareScreenCapturer implements VideoCapturer, VideoSink 
         if (this.oldWidth != width || this.oldHeight != height) {
             this.oldWidth = width;
             this.oldHeight = height;
-
+            android.util.Log.d("by_debug", "changeCaptureFormat: "+this.oldWidth+" // "+this.oldHeight);
             if (oldHeight > oldWidth) {
                 ThreadUtils.invokeAtFrontUninterruptibly(surfaceTextureHelper.getHandler(), new Runnable() {
                     @Override
