@@ -189,7 +189,7 @@ public class OrientationAwareScreenCapturer implements VideoCapturer, VideoSink 
             }
 
             if (oldWidth > oldHeight) {
-                surfaceTextureHelper.setTextureSize(oldWidth, oldHeight);
+                surfaceTextureHelper.setTextureSize(oldHeight, oldWidth);
                 virtualDisplay.setSurface(new Surface(surfaceTextureHelper.getSurfaceTexture()));
                 final Handler handler = new Handler(Looper.getMainLooper());
                 handler.postDelayed(new Runnable() {
@@ -199,7 +199,7 @@ public class OrientationAwareScreenCapturer implements VideoCapturer, VideoSink 
                             @Override
                             public void run() {
                                 if (virtualDisplay != null && surfaceTextureHelper != null) {
-                                    virtualDisplay.resize(oldWidth, oldHeight, VIRTUAL_DISPLAY_DPI);
+                                    virtualDisplay.resize(oldHeight, oldWidth, VIRTUAL_DISPLAY_DPI);
                                 }
                             }
                         });
