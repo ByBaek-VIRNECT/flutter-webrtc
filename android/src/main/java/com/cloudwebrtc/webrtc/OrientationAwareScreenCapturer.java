@@ -65,6 +65,7 @@ public class OrientationAwareScreenCapturer implements VideoCapturer, VideoSink 
     public void onFrame(VideoFrame frame) {
         checkNotDisposed();
         this.isPortrait = isDeviceOrientationPortrait();
+        android.util.Log.d("by_debug", "onFrame: isPortrait = "+isDeviceOrientationPortrait());
         final int max = Math.max(this.height, this.width);
         final int min = Math.min(this.height, this.width);
         if (this.isPortrait) {
@@ -110,7 +111,7 @@ public class OrientationAwareScreenCapturer implements VideoCapturer, VideoSink 
     public synchronized void startCapture(
             final int width, final int height, final int ignoredFramerate) {
         //checkNotDisposed();
-
+        android.util.Log.d("by_debug", "startCapture: isPortrait = "+isDeviceOrientationPortrait());
         this.isPortrait = isDeviceOrientationPortrait();
         if (this.isPortrait) {
             this.width = width;
@@ -119,6 +120,9 @@ public class OrientationAwareScreenCapturer implements VideoCapturer, VideoSink 
             this.height = width;
             this.width = height;
         }
+
+        android.util.Log.d("test", "width = "+width+" // height = "+height);
+        android.util.Log.d("test", "oldWidth = "+oldWidth+" // oldHeight = "+oldHeight);
 
         mediaProjection = mediaProjectionManager.getMediaProjection(
                 Activity.RESULT_OK, mediaProjectionPermissionResultData);
