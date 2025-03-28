@@ -111,7 +111,7 @@ public class GetUserMediaImpl {
     private AudioDeviceInfo preferredInput = null;
     private boolean isTorchOn;
     private Intent mediaProjectionData = null;
-
+    private boolean isNaturalLandScapeDevice;
 
     public void screenRequestPermissions(ResultReceiver resultReceiver) {
         mediaProjectionData = null;
