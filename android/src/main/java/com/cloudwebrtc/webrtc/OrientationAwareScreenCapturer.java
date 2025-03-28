@@ -79,7 +79,7 @@ public class OrientationAwareScreenCapturer implements VideoCapturer, VideoSink 
     private boolean isDeviceOrientationPortrait() {
         final int surfaceRotation = windowManager.getDefaultDisplay().getRotation();
 
-        return surfaceRotation != Surface.ROTATION_90 && surfaceRotation != Surface.ROTATION_270;
+        return false;
     }
 
 
