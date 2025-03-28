@@ -141,7 +141,7 @@ public class GetUserMediaImpl {
         }
     }
 
-    public void requestCapturePermission(final Result result,final boolean isNaturalLandscapeDevice) {
+    public void requestCapturePermission(final Result result) {
         screenRequestPermissions(
                 new ResultReceiver(new Handler(Looper.getMainLooper())) {
                     @Override
