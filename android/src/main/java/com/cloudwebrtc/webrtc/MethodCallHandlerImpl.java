@@ -737,7 +737,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
       case "getDisplayMedia": {
         Map<String, Object> constraints = call.argument("constraints");
         ConstraintsMap constraintsMap = new ConstraintsMap(constraints);
-        getDisplayMedia(constraintsMap, result, constraints.get("isNaturalLandscapeDevice"));
+        getDisplayMedia(constraintsMap, result, Boolean.parseBoolean(constraints.get("isNaturalLandscapeDevice").toString()));
         break;
       }
       case "startRecordToFile":
