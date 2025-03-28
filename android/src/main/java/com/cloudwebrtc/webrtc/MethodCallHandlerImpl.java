@@ -730,13 +730,13 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
         result.success(null);
         break;
       case "requestCapturePermission": {
-        getUserMediaImpl.requestCapturePermission(result);
+        boolean isNaturalLandscapeDevice = call.argument("isNaturalLandscapeDevice");
+        getUserMediaImpl.requestCapturePermission(result,isNaturalLandscapeDevice);
         break;
       }
       case "getDisplayMedia": {
         Map<String, Object> constraints = call.argument("constraints");
         ConstraintsMap constraintsMap = new ConstraintsMap(constraints);
-        getDisplayMedia(constraintsMap, result, Boolean.parseBoolean(constraints.get("isNaturalLandscapeDevice").toString()));
         break;
       }
       case "startRecordToFile":
@@ -1509,7 +1509,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
     getUserMediaImpl.getUserMedia(constraints, result, mediaStream);
   }
 
-  public void getDisplayMedia(ConstraintsMap constraints, Result result,boolean isNaturalLandscapeDevice) {
+  public void getDisplayMedia(ConstraintsMap constraints, Result result) {
     String streamId = getNextStreamUUID();
     MediaStream mediaStream = mFactory.createLocalMediaStream(streamId);
 
@@ -1522,7 +1522,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
       return;
     }
 
-    getUserMediaImpl.getDisplayMedia(constraints, result, mediaStream,isNaturalLandscapeDevice);
+    getUserMediaImpl.getDisplayMedia(constraints, result, mediaStream);
   }
 
   public void getSources(Result result) {
