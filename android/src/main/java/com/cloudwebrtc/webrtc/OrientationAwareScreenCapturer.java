@@ -46,6 +46,7 @@ public class OrientationAwareScreenCapturer implements VideoCapturer, VideoSink 
     private MediaProjectionManager mediaProjectionManager;
     private WindowManager windowManager;
     private boolean isPortrait;
+    private boolean isNaturalLandScapeDevice;
 
     /**
      * Constructs a new Screen Capturer.
@@ -57,9 +58,10 @@ public class OrientationAwareScreenCapturer implements VideoCapturer, VideoSink 
      *                                            logic in events such as when the user revokes a previously granted capture permission.
      **/
     public OrientationAwareScreenCapturer(Intent mediaProjectionPermissionResultData,
-                                          MediaProjection.Callback mediaProjectionCallback) {
+                                          MediaProjection.Callback mediaProjectionCallback,boolean isNaturalLandScapeDevice) {
         this.mediaProjectionPermissionResultData = mediaProjectionPermissionResultData;
         this.mediaProjectionCallback = mediaProjectionCallback;
+        this.isNaturalLandScapeDevice = isNaturalLandScapeDevice;
     }
 
     public void onFrame(VideoFrame frame) {
@@ -183,10 +185,18 @@ public class OrientationAwareScreenCapturer implements VideoCapturer, VideoSink 
                 ThreadUtils.invokeAtFrontUninterruptibly(surfaceTextureHelper.getHandler(), new Runnable() {
                     @Override
                     public void run() {
-                        if (virtualDisplay != null && surfaceTextureHelper != null) {
-                            virtualDisplay.setSurface(new Surface(surfaceTextureHelper.getSurfaceTexture()));
-                            surfaceTextureHelper.setTextureSize(oldWidth, oldHeight);
-                            virtualDisplay.resize(oldWidth, oldHeight, VIRTUAL_DISPLAY_DPI);
+                        if(isNaturalLandScapeDevice){
+                            if (virtualDisplay != null && surfaceTextureHelper != null) {
+                                virtualDisplay.setSurface(new Surface(surfaceTextureHelper.getSurfaceTexture()));
+                                surfaceTextureHelper.setTextureSize(1280, 720);
+                                virtualDisplay.resize(1280, 720, VIRTUAL_DISPLAY_DPI);
+                            }
+                        }else{
+                            if (virtualDisplay != null && surfaceTextureHelper != null) {
+                                virtualDisplay.setSurface(new Surface(surfaceTextureHelper.getSurfaceTexture()));
+                                surfaceTextureHelper.setTextureSize(oldWidth, oldHeight);
+                                virtualDisplay.resize(oldWidth, oldHeight, VIRTUAL_DISPLAY_DPI);
+                            }
                         }
                     }
                 });
@@ -203,7 +213,11 @@ public class OrientationAwareScreenCapturer implements VideoCapturer, VideoSink 
                             @Override
                             public void run() {
                                 if (virtualDisplay != null && surfaceTextureHelper != null) {
-                                    virtualDisplay.resize(oldHeight, oldWidth, VIRTUAL_DISPLAY_DPI);
+                                    if(isNaturalLandScapeDevice){
+                                        virtualDisplay.resize(1280, 720, VIRTUAL_DISPLAY_DPI);
+                                    }else{
+                                        virtualDisplay.resize(oldHeight, oldWidth, VIRTUAL_DISPLAY_DPI);
+                                    }
                                 }
                             }
                         });
@@ -214,11 +228,19 @@ public class OrientationAwareScreenCapturer implements VideoCapturer, VideoSink 
     }
 
     private void createVirtualDisplay() {
-        surfaceTextureHelper.setTextureSize(width, height);
-        surfaceTextureHelper.getSurfaceTexture().setDefaultBufferSize(width, height);
-        virtualDisplay = mediaProjection.createVirtualDisplay("WebRTC_ScreenCapture", width, height,
-                VIRTUAL_DISPLAY_DPI, DISPLAY_FLAGS, new Surface(surfaceTextureHelper.getSurfaceTexture()),
-                null /* callback */, null /* callback handler */);
+        if(isNaturalLandScapeDevice){
+            surfaceTextureHelper.setTextureSize(1280, 720);
+            surfaceTextureHelper.getSurfaceTexture().setDefaultBufferSize(1280, 720);
+            virtualDisplay = mediaProjection.createVirtualDisplay("WebRTC_ScreenCapture", 1280, 720,
+                    VIRTUAL_DISPLAY_DPI, DISPLAY_FLAGS, new Surface(surfaceTextureHelper.getSurfaceTexture()),
+                    null /* callback */, null /* callback handler */);
+        }else{
+            surfaceTextureHelper.setTextureSize(width, height);
+            surfaceTextureHelper.getSurfaceTexture().setDefaultBufferSize(width, height);
+            virtualDisplay = mediaProjection.createVirtualDisplay("WebRTC_ScreenCapture", width, height,
+                    VIRTUAL_DISPLAY_DPI, DISPLAY_FLAGS, new Surface(surfaceTextureHelper.getSurfaceTexture()),
+                    null /* callback */, null /* callback handler */);
+        }
     }
 
     @Override

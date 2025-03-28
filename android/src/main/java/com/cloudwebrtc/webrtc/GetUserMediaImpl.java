@@ -141,7 +141,7 @@ public class GetUserMediaImpl {
         }
     }
 
-    public void requestCapturePermission(final Result result) {
+    public void requestCapturePermission(final Result result,final boolean isNaturalLandscapeDevice) {
         screenRequestPermissions(
                 new ResultReceiver(new Handler(Looper.getMainLooper())) {
                     @Override
@@ -488,7 +488,7 @@ public class GetUserMediaImpl {
     }
 
     void getDisplayMedia(
-            final ConstraintsMap constraints, final Result result, final MediaStream mediaStream) {
+            final ConstraintsMap constraints, final Result result, final MediaStream mediaStream,final boolean isNaturalLandscapeDevice) {
         if (mediaProjectionData == null) {
             screenRequestPermissions(
                     new ResultReceiver(new Handler(Looper.getMainLooper())) {
@@ -501,15 +501,15 @@ public class GetUserMediaImpl {
                                 resultError("screenRequestPermissions", "User didn't give permission to capture the screen.", result);
                                 return;
                             }
-                            getDisplayMedia(result, mediaStream, mediaProjectionData);
+                            getDisplayMedia(result, mediaStream, mediaProjectionData,isNaturalLandscapeDevice);
                         }
                     });
         } else {
-            getDisplayMedia(result, mediaStream, mediaProjectionData);
+            getDisplayMedia(result, mediaStream, mediaProjectionData,isNaturalLandscapeDevice);
         }
     }
 
-    private void getDisplayMedia(final Result result, final MediaStream mediaStream, final Intent mediaProjectionData) {
+    private void getDisplayMedia(final Result result, final MediaStream mediaStream, final Intent mediaProjectionData,final boolean isNaturalLandscapeDevice) {
         /* Create ScreenCapture */
         VideoTrack displayTrack = null;
         VideoCapturer videoCapturer = null;
@@ -524,7 +524,8 @@ public class GetUserMediaImpl {
                                 // and there is no need to call the resulterror method
                                 //resultError("MediaProjection.Callback()", "User revoked permission to capture the screen.", result);
                             }
-                        });
+                        },
+                        isNaturalLandscapeDevice);
         if (videoCapturer == null) {
             resultError("screenRequestPermissions", "GetDisplayMediaFailed, User revoked permission to capture the screen.", result);
             return;
