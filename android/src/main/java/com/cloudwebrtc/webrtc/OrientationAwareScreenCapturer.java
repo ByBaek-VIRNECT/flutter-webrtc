@@ -79,7 +79,7 @@ public class OrientationAwareScreenCapturer implements VideoCapturer, VideoSink 
     private boolean isDeviceOrientationPortrait() {
         final int surfaceRotation = windowManager.getDefaultDisplay().getRotation();
 
-        return surfaceRotation != Surface.ROTATION_0 && surfaceRotation != Surface.ROTATION_180;
+        return surfaceRotation != Surface.ROTATION_90 && surfaceRotation != Surface.ROTATION_270;
     }
 
 
@@ -121,8 +121,8 @@ public class OrientationAwareScreenCapturer implements VideoCapturer, VideoSink 
             this.width = height;
         }
 
-        android.util.Log.d("test", "width = "+width+" // height = "+height);
-        android.util.Log.d("test", "oldWidth = "+oldWidth+" // oldHeight = "+oldHeight);
+        android.util.Log.d("by_debug", "width = "+width+" // height = "+height);
+        android.util.Log.d("by_debug", "oldWidth = "+oldWidth+" // oldHeight = "+oldHeight);
 
         mediaProjection = mediaProjectionManager.getMediaProjection(
                 Activity.RESULT_OK, mediaProjectionPermissionResultData);
