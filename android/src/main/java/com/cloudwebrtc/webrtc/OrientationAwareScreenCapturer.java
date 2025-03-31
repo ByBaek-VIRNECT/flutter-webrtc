@@ -62,7 +62,6 @@ public class OrientationAwareScreenCapturer implements VideoCapturer, VideoSink 
         this.mediaProjectionPermissionResultData = mediaProjectionPermissionResultData;
         this.mediaProjectionCallback = mediaProjectionCallback;
         this.isNaturalLandScapeDevice = isNaturalLandScapeDevice;
-        android.util.Log.d("by_debug", "OrientationAwareScreenCapturer: isNaturalLandScapeDevice"+isNaturalLandScapeDevice);
     }
 
     public void onFrame(VideoFrame frame) {
@@ -200,7 +199,7 @@ public class OrientationAwareScreenCapturer implements VideoCapturer, VideoSink 
             }
 
             if (oldWidth > oldHeight) {
-                surfaceTextureHelper.setTextureSize(oldHeight, oldWidth);
+                surfaceTextureHelper.setTextureSize(oldWidth, oldHeight);
                 virtualDisplay.setSurface(new Surface(surfaceTextureHelper.getSurfaceTexture()));
                 final Handler handler = new Handler(Looper.getMainLooper());
                 handler.postDelayed(new Runnable() {
@@ -213,7 +212,7 @@ public class OrientationAwareScreenCapturer implements VideoCapturer, VideoSink 
                                     if(isNaturalLandScapeDevice){
                                         virtualDisplay.resize(1280, 720, VIRTUAL_DISPLAY_DPI);
                                     }else{
-                                        virtualDisplay.resize(oldHeight, oldWidth, VIRTUAL_DISPLAY_DPI);
+                                        virtualDisplay.resize(oldWidth, oldHeight, VIRTUAL_DISPLAY_DPI);
                                     }
                                 }
                             }
