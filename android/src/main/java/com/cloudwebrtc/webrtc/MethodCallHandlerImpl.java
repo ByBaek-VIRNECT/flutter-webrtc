@@ -730,14 +730,15 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
         result.success(null);
         break;
       case "requestCapturePermission": {
-//        boolean isNaturalLandscapeDevice = call.argument("isNaturalLandscapeDevice");
-//        android.util.Log.d(TAG, "onMethodCall: isNaturalLandscapeDevice = "+isNaturalLandscapeDevice);
+        boolean isNaturalLandscapeDevice = call.argument("isNaturalLandscapeDevice");
+        android.util.Log.d(TAG, "onMethodCall: isNaturalLandscapeDevice = "+isNaturalLandscapeDevice);
         getUserMediaImpl.requestCapturePermission(result);
         break;
       }
       case "getDisplayMedia": {
         Map<String, Object> constraints = call.argument("constraints");
         ConstraintsMap constraintsMap = new ConstraintsMap(constraints);
+        getDisplayMedia(constraintsMap, result);
         break;
       }
       case "startRecordToFile":

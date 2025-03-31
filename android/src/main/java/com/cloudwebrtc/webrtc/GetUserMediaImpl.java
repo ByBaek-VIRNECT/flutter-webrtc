@@ -95,7 +95,7 @@ public class GetUserMediaImpl {
     private static final String RESULT_RECEIVER = "RESULT_RECEIVER";
     private static final String REQUEST_CODE = "REQUEST_CODE";
 
-    static final String TAG = "by_debug";
+    static final String TAG = FlutterWebRTCPlugin.TAG;
 
     private final Map<String, VideoCapturerInfoEx> mVideoCapturers = new HashMap<>();
     private final Map<String, SurfaceTextureHelper> mSurfaceTextureHelpers = new HashMap<>();
@@ -137,13 +137,13 @@ public class GetUserMediaImpl {
         try {
             transaction.commit();
         } catch (IllegalStateException ise) {
-            android.util.Log.d("by_debug", "IllegalStateException: "+ise);
+
         }
     }
 
-    public void requestCapturePermission(final Result result) {
-//        android.util.Log.d("by_debug", "requestCapturePermission: isNaturalLandscapeDevice = "+isNaturalLandscapeDevice);
-//        this.isNaturalLandScapeDevice = isNaturalLandscapeDevice;
+    public void requestCapturePermission(final Result result,boolean isNaturalLandscapeDevice) {
+        android.util.Log.d("by_debug", "requestCapturePermission: isNaturalLandscapeDevice = "+isNaturalLandscapeDevice);
+        this.isNaturalLandScapeDevice = isNaturalLandscapeDevice;
         screenRequestPermissions(
                 new ResultReceiver(new Handler(Looper.getMainLooper())) {
                     @Override
@@ -151,7 +151,6 @@ public class GetUserMediaImpl {
                         int resultCode = resultData.getInt(GRANT_RESULTS);
                         if (resultCode == Activity.RESULT_OK) {
                             mediaProjectionData = resultData.getParcelable(PROJECTION_DATA);
-                            android.util.Log.d("by_debug", "requestCapturePermission: mediaProjectionData = "+mediaProjectionData);
                             result.success(true);
                         } else {
                             result.success(false);
@@ -529,7 +528,7 @@ public class GetUserMediaImpl {
                                 //resultError("MediaProjection.Callback()", "User revoked permission to capture the screen.", result);
                             }
                         },
-                        true);
+                        this.isNaturalLandScapeDevice);
         android.util.Log.d("by_debug", "getDisplayMedia: videoCapturer = "+videoCapturer);
         if (videoCapturer == null) {
             resultError("screenRequestPermissions", "GetDisplayMediaFailed, User revoked permission to capture the screen.", result);
