@@ -95,7 +95,7 @@ public class GetUserMediaImpl {
     private static final String RESULT_RECEIVER = "RESULT_RECEIVER";
     private static final String REQUEST_CODE = "REQUEST_CODE";
 
-    static final String TAG = FlutterWebRTCPlugin.TAG;
+    static final String TAG = "by_debug";
 
     private final Map<String, VideoCapturerInfoEx> mVideoCapturers = new HashMap<>();
     private final Map<String, SurfaceTextureHelper> mSurfaceTextureHelpers = new HashMap<>();
@@ -513,6 +513,7 @@ public class GetUserMediaImpl {
     }
 
     private void getDisplayMedia(final Result result, final MediaStream mediaStream, final Intent mediaProjectionData) {
+        android.util.Log.d("by_debug", "getDisplayMedia: mediaProjectionData = "+mediaProjectionData);
         /* Create ScreenCapture */
         VideoTrack displayTrack = null;
         VideoCapturer videoCapturer = null;
