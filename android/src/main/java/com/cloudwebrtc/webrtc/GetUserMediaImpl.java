@@ -141,9 +141,9 @@ public class GetUserMediaImpl {
         }
     }
 
-    public void requestCapturePermission(final Result result,boolean isNaturalLandscapeDevice) {
-        android.util.Log.d("by_debug", "requestCapturePermission: isNaturalLandscapeDevice = "+isNaturalLandscapeDevice);
-        this.isNaturalLandScapeDevice = isNaturalLandscapeDevice;
+    public void requestCapturePermission(final Result result) {
+//        android.util.Log.d("by_debug", "requestCapturePermission: isNaturalLandscapeDevice = "+isNaturalLandscapeDevice);
+//        this.isNaturalLandScapeDevice = isNaturalLandscapeDevice;
         screenRequestPermissions(
                 new ResultReceiver(new Handler(Looper.getMainLooper())) {
                     @Override
@@ -529,7 +529,7 @@ public class GetUserMediaImpl {
                                 //resultError("MediaProjection.Callback()", "User revoked permission to capture the screen.", result);
                             }
                         },
-                        this.isNaturalLandScapeDevice);
+                        true);
         android.util.Log.d("by_debug", "getDisplayMedia: videoCapturer = "+videoCapturer);
         if (videoCapturer == null) {
             resultError("screenRequestPermissions", "GetDisplayMediaFailed, User revoked permission to capture the screen.", result);
