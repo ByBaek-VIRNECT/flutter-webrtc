@@ -150,8 +150,8 @@ public class GetUserMediaImpl {
                     protected void onReceiveResult(int requestCode, Bundle resultData) {
                         int resultCode = resultData.getInt(GRANT_RESULTS);
                         if (resultCode == Activity.RESULT_OK) {
-                            android.util.Log.d("by_debug", "requestCapturePermission: mediaProjectionData = "+mediaProjectionData);
                             mediaProjectionData = resultData.getParcelable(PROJECTION_DATA);
+                            android.util.Log.d("by_debug", "requestCapturePermission: mediaProjectionData = "+mediaProjectionData);
                             result.success(true);
                         } else {
                             result.success(false);
@@ -529,6 +529,7 @@ public class GetUserMediaImpl {
                             }
                         },
                         this.isNaturalLandScapeDevice);
+        android.util.Log.d("by_debug", "getDisplayMedia: videoCapturer = "+videoCapturer);
         if (videoCapturer == null) {
             resultError("screenRequestPermissions", "GetDisplayMediaFailed, User revoked permission to capture the screen.", result);
             return;

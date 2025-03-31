@@ -62,6 +62,7 @@ public class OrientationAwareScreenCapturer implements VideoCapturer, VideoSink 
         this.mediaProjectionPermissionResultData = mediaProjectionPermissionResultData;
         this.mediaProjectionCallback = mediaProjectionCallback;
         this.isNaturalLandScapeDevice = isNaturalLandScapeDevice;
+        android.util.Log.d("by_debug", "OrientationAwareScreenCapturer: isNaturalLandScapeDevice"+isNaturalLandScapeDevice);
     }
 
     public void onFrame(VideoFrame frame) {
