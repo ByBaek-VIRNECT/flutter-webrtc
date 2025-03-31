@@ -142,6 +142,7 @@ public class GetUserMediaImpl {
     }
 
     public void requestCapturePermission(final Result result,boolean isNaturalLandscapeDevice) {
+        android.util.Log.d("by_debug", "requestCapturePermission: isNaturalLandscapeDevice = "+isNaturalLandscapeDevice);
         this.isNaturalLandScapeDevice = isNaturalLandscapeDevice;
         screenRequestPermissions(
                 new ResultReceiver(new Handler(Looper.getMainLooper())) {
@@ -149,6 +150,7 @@ public class GetUserMediaImpl {
                     protected void onReceiveResult(int requestCode, Bundle resultData) {
                         int resultCode = resultData.getInt(GRANT_RESULTS);
                         if (resultCode == Activity.RESULT_OK) {
+                            android.util.Log.d("by_debug", "requestCapturePermission: mediaProjectionData = "+mediaProjectionData);
                             mediaProjectionData = resultData.getParcelable(PROJECTION_DATA);
                             result.success(true);
                         } else {

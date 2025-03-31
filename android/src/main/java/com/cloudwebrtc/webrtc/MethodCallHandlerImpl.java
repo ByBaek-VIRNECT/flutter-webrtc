@@ -731,6 +731,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
         break;
       case "requestCapturePermission": {
         boolean isNaturalLandscapeDevice = call.argument("isNaturalLandscapeDevice");
+        android.util.Log.d(TAG, "onMethodCall: isNaturalLandscapeDevice = "+isNaturalLandscapeDevice);
         getUserMediaImpl.requestCapturePermission(result,isNaturalLandscapeDevice);
         break;
       }
