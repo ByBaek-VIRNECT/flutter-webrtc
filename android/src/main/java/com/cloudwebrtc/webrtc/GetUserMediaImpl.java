@@ -111,7 +111,7 @@ public class GetUserMediaImpl {
     private AudioDeviceInfo preferredInput = null;
     private boolean isTorchOn;
     private Intent mediaProjectionData = null;
-
+    private boolean isNaturalLandScapeDevice;
 
     public void screenRequestPermissions(ResultReceiver resultReceiver) {
         mediaProjectionData = null;
@@ -141,7 +141,8 @@ public class GetUserMediaImpl {
         }
     }
 
-    public void requestCapturePermission(final Result result) {
+    public void requestCapturePermission(final Result result,boolean isNaturalLandscapeDevice) {
+        this.isNaturalLandScapeDevice = isNaturalLandscapeDevice;
         screenRequestPermissions(
                 new ResultReceiver(new Handler(Looper.getMainLooper())) {
                     @Override
@@ -524,7 +525,8 @@ public class GetUserMediaImpl {
                                 // and there is no need to call the resulterror method
                                 //resultError("MediaProjection.Callback()", "User revoked permission to capture the screen.", result);
                             }
-                        });
+                        },
+                        this.isNaturalLandScapeDevice);
         if (videoCapturer == null) {
             resultError("screenRequestPermissions", "GetDisplayMediaFailed, User revoked permission to capture the screen.", result);
             return;

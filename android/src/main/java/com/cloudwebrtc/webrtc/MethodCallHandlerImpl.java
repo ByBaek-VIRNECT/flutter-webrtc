@@ -730,7 +730,8 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
         result.success(null);
         break;
       case "requestCapturePermission": {
-        getUserMediaImpl.requestCapturePermission(result);
+        boolean isNaturalLandscapeDevice = call.argument("isNaturalLandscapeDevice");
+        getUserMediaImpl.requestCapturePermission(result,isNaturalLandscapeDevice);
         break;
       }
       case "getDisplayMedia": {
