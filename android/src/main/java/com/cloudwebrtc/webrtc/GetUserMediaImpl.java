@@ -137,7 +137,7 @@ public class GetUserMediaImpl {
         try {
             transaction.commit();
         } catch (IllegalStateException ise) {
-
+            android.util.Log.d("by_debug", "IllegalStateException: "+ise);
         }
     }
 
