@@ -192,8 +192,14 @@ public class GetUserMediaImpl {
                         (MediaProjectionManager) activity.getSystemService(Context.MEDIA_PROJECTION_SERVICE);
 
                 // call for the projection manager
-                this.startActivityForResult(
-                        mediaProjectionManager.createScreenCaptureIntent(MediaProjectionConfig.createConfigForDefaultDisplay()), requestCode);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+                    this.startActivityForResult(
+                            mediaProjectionManager.createScreenCaptureIntent(MediaProjectionConfig.createConfigForDefaultDisplay()), requestCode);
+                }else{
+                    this.startActivityForResult(
+                            mediaProjectionManager.createScreenCaptureIntent(), requestCode);
+                }
             }
         }
 
