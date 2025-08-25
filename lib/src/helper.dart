@@ -184,11 +184,33 @@ class Helper {
               preferSpeakerOutput: preferSpeakerOutput));
 
   /// Request capture permission for Android
-  static Future<bool> requestCapturePermission() async {
+  static Future<bool> requestCapturePermission({bool isNaturalLandscapeDevice = false}) async {
     if (WebRTC.platformIsAndroid) {
-      return await WebRTC.invokeMethod('requestCapturePermission');
+      return await WebRTC.invokeMethod(
+          'requestCapturePermission', <String, dynamic>{
+        'isNaturalLandscapeDevice': isNaturalLandscapeDevice
+      });
     } else {
       throw Exception('requestCapturePermission only support for Android');
+    }
+  }
+
+  static Future<void> stopVideoCapturer(MediaStreamTrack videoTrack) async {
+    if (WebRTC.platformIsAndroid) {
+      await WebRTC.invokeMethod(
+        'stopVideoCapturer',
+        <String, dynamic>{'trackId': videoTrack.id},
+      );
+    } else {
+      throw Exception('stopVideoCapturer only support for Android');
+    }
+  }
+
+  static Future<void> reStartVideoCapturer() async {
+    if (WebRTC.platformIsAndroid) {
+      await WebRTC.invokeMethod('reStartCamera');
+    } else {
+      throw Exception('reStartVideoCapturer only support for Android');
     }
   }
 }

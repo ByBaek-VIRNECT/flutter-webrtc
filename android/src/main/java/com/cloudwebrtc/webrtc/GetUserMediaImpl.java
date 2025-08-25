@@ -14,6 +14,7 @@ import android.hardware.camera2.CameraManager;
 import android.media.AudioDeviceInfo;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
+import android.media.projection.MediaProjectionConfig;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Build.VERSION;
@@ -117,7 +118,7 @@ public class GetUserMediaImpl {
     private AudioDeviceInfo preferredInput = null;
     private boolean isTorchOn;
     private Intent mediaProjectionData = null;
-
+    private boolean isNaturalLandScapeDevice;
 
     public void screenRequestPermissions(ResultReceiver resultReceiver) {
         mediaProjectionData = null;
@@ -147,7 +148,8 @@ public class GetUserMediaImpl {
         }
     }
 
-    public void requestCapturePermission(final Result result) {
+    public void requestCapturePermission(final Result result,boolean isNaturalLandscapeDevice) {
+        this.isNaturalLandScapeDevice = isNaturalLandscapeDevice;
         screenRequestPermissions(
                 new ResultReceiver(new Handler(Looper.getMainLooper())) {
                     @Override
@@ -190,8 +192,14 @@ public class GetUserMediaImpl {
                         (MediaProjectionManager) activity.getSystemService(Context.MEDIA_PROJECTION_SERVICE);
 
                 // call for the projection manager
-                this.startActivityForResult(
-                        mediaProjectionManager.createScreenCaptureIntent(), requestCode);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+                    this.startActivityForResult(
+                            mediaProjectionManager.createScreenCaptureIntent(MediaProjectionConfig.createConfigForDefaultDisplay()), requestCode);
+                }else{
+                    this.startActivityForResult(
+                            mediaProjectionManager.createScreenCaptureIntent(), requestCode);
+                }
             }
         }
 
@@ -519,7 +527,8 @@ public class GetUserMediaImpl {
                                 // and there is no need to call the resulterror method
                                 //resultError("MediaProjection.Callback()", "User revoked permission to capture the screen.", result);
                             }
-                        });
+                        },
+                        this.isNaturalLandScapeDevice);
         if (videoCapturer == null) {
             resultError("screenRequestPermissions", "GetDisplayMediaFailed, User revoked permission to capture the screen.", result);
             return;
@@ -1034,5 +1043,29 @@ public class GetUserMediaImpl {
             }
         }
         return -1;
+    }
+
+    void stopVideoCapturerSync(String id) {
+        synchronized (mVideoCapturers) {
+            VideoCapturerInfo info = mVideoCapturers.get(id);
+            if (info != null) {
+                try {
+                    info.capturer.stopCapture();
+                } catch (InterruptedException e) {
+                    Log.e(TAG, "stopVideoCapturerSync() Failed to stop video capturer");
+                } finally {
+                    SurfaceTextureHelper helper = mSurfaceTextureHelpers.get(id);
+                    if (helper != null) {
+                        helper.stopListening();
+                    }
+                }
+            }
+        }
+    }
+
+    void stopVideoCapturer(String id) {
+        new Thread(() -> {
+            stopVideoCapturerSync(id);
+        }).start();
     }
 }

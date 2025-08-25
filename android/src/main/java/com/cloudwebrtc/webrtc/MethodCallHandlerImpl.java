@@ -660,6 +660,15 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
         cameraUtils.setTorch(trackId, torch, result);
         break;
       }
+      case "reStartCamera": {
+        reStartCamera();
+        break;
+      }
+      case "stopVideoCapturer": {
+        String trackId = call.argument("trackId");
+        getUserMediaImpl.stopVideoCapturer(trackId);
+        break;
+      }
       case "mediaStreamTrackSetZoom": {
         String trackId = call.argument("trackId");
         double zoomLevel = call.argument("zoomLevel");
@@ -752,7 +761,8 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
         result.success(null);
         break;
       case "requestCapturePermission": {
-        getUserMediaImpl.requestCapturePermission(result);
+        boolean isNaturalLandscapeDevice = call.argument("isNaturalLandscapeDevice");
+        getUserMediaImpl.requestCapturePermission(result,isNaturalLandscapeDevice);
         break;
       }
       case "getDisplayMedia": {
