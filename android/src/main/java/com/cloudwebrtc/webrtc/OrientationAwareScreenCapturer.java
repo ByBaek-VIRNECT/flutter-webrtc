@@ -141,10 +141,12 @@ public class OrientationAwareScreenCapturer implements VideoCapturer, VideoSink 
             public void run() {
                 surfaceTextureHelper.stopListening();
                 capturerObserver.onCapturerStopped();
+                android.util.Log.d("by_debug", "stopCapture, virtualDisplay:"+virtualDisplay);
                 if (virtualDisplay != null) {
                     virtualDisplay.release();
                     virtualDisplay = null;
                 }
+                android.util.Log.d("by_debug", "stopCapture, mediaProjection:"+mediaProjection);
                 if (mediaProjection != null) {
                     // Unregister the callback before stopping, otherwise the callback recursively
                     // calls this method.

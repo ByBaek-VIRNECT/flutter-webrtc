@@ -120,6 +120,8 @@ public class GetUserMediaImpl {
     private Intent mediaProjectionData = null;
     private boolean isNaturalLandScapeDevice;
 
+    private OrientationAwareScreenCapturer orientationAwareScreenCapturer = null;
+
     public void screenRequestPermissions(ResultReceiver resultReceiver) {
         mediaProjectionData = null;
         final Activity activity = stateProvider.getActivity();
@@ -516,19 +518,29 @@ public class GetUserMediaImpl {
         /* Create ScreenCapture */
         VideoTrack displayTrack = null;
         VideoCapturer videoCapturer = null;
-        videoCapturer =
-                new OrientationAwareScreenCapturer(
-                        mediaProjectionData,
-                        new MediaProjection.Callback() {
-                            @Override
-                            public void onStop() {
-                                super.onStop();
-                                // After Huawei P30 and Android 10 version test, the onstop method is called, which will not affect the next process,
-                                // and there is no need to call the resulterror method
-                                //resultError("MediaProjection.Callback()", "User revoked permission to capture the screen.", result);
-                            }
-                        },
-                        this.isNaturalLandScapeDevice);
+        android.util.Log.d("by_debug", "getDisplayMedia: orientationAwareScreenCapturer : "+orientationAwareScreenCapturer);
+        android.util.Log.d("by_debug", "getDisplayMedia: mediaProjectionData : "+mediaProjectionData);
+        if(orientationAwareScreenCapturer != null){
+            orientationAwareScreenCapturer.stopCapture();
+            orientationAwareScreenCapturer.dispose();
+            orientationAwareScreenCapturer = null;
+        }
+
+        orientationAwareScreenCapturer = new OrientationAwareScreenCapturer(
+                mediaProjectionData,
+                new MediaProjection.Callback() {
+                    @Override
+                    public void onStop() {
+                        super.onStop();
+                        // After Huawei P30 and Android 10 version test, the onstop method is called, which will not affect the next process,
+                        // and there is no need to call the resulterror method
+                        //resultError("MediaProjection.Callback()", "User revoked permission to capture the screen.", result);
+                    }
+                },
+                this.isNaturalLandScapeDevice);
+
+        videoCapturer = orientationAwareScreenCapturer;
+
         if (videoCapturer == null) {
             resultError("screenRequestPermissions", "GetDisplayMediaFailed, User revoked permission to capture the screen.", result);
             return;
