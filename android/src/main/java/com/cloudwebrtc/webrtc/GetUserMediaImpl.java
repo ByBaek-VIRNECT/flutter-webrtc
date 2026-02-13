@@ -49,7 +49,10 @@ import com.cloudwebrtc.webrtc.utils.MediaConstraintsUtils;
 import com.cloudwebrtc.webrtc.utils.ObjectType;
 import com.cloudwebrtc.webrtc.utils.PermissionUtils;
 import com.cloudwebrtc.webrtc.video.LocalVideoTrack;
+import com.cloudwebrtc.webrtc.video.UvcVideoCapturer;
 import com.cloudwebrtc.webrtc.video.VideoCapturerInfo;
+
+import android.hardware.usb.UsbDevice;
 
 import org.webrtc.AudioSource;
 import org.webrtc.AudioTrack;
@@ -598,6 +601,107 @@ public class GetUserMediaImpl {
         successResult.putString("streamId", streamId);
         successResult.putArray("audioTracks", audioTracks.toArrayList());
         successResult.putArray("videoTracks", videoTracks.toArrayList());
+        result.success(successResult.toMap());
+    }
+
+    /**
+     * Gets video stream from USB camera (UVC device).
+     * Similar to getDisplayMedia but for USB cameras.
+     */
+    void getUsbCameraMedia(
+            final ConstraintsMap constraints,
+            final Result result,
+            final MediaStream mediaStream,
+            final UsbDevice usbDevice) {
+
+        Log.d(TAG, "getUsbCameraMedia called");
+
+        // Get video constraints
+        int width = DEFAULT_WIDTH;
+        int height = DEFAULT_HEIGHT;
+        int fps = DEFAULT_FPS;
+
+        if (constraints.hasKey("video") && constraints.getType("video") == ObjectType.Map) {
+            ConstraintsMap videoConstraints = constraints.getMap("video");
+            if (videoConstraints.hasKey("width")) {
+                width = videoConstraints.getInt("width");
+            }
+            if (videoConstraints.hasKey("height")) {
+                height = videoConstraints.getInt("height");
+            }
+            if (videoConstraints.hasKey("frameRate")) {
+                fps = videoConstraints.getInt("frameRate");
+            }
+        }
+
+        // Create UVC VideoCapturer
+        VideoCapturer videoCapturer = new UvcVideoCapturer(applicationContext, usbDevice);
+
+        if (videoCapturer == null) {
+            resultError("getUsbCameraMedia", "Failed to create UVC camera capturer", result);
+            return;
+        }
+
+        PeerConnectionFactory pcFactory = stateProvider.getPeerConnectionFactory();
+        VideoSource videoSource = pcFactory.createVideoSource(false);
+
+        String threadName = Thread.currentThread().getName() + "_texture_uvc_thread";
+        SurfaceTextureHelper surfaceTextureHelper =
+                SurfaceTextureHelper.create(threadName, EglUtils.getRootEglBaseContext());
+
+        videoCapturer.initialize(
+                surfaceTextureHelper, applicationContext, videoSource.getCapturerObserver());
+
+        VideoCapturerInfoEx info = new VideoCapturerInfoEx();
+        info.width = width;
+        info.height = height;
+        info.fps = fps;
+        info.isScreenCapture = false;
+        info.capturer = videoCapturer;
+
+        videoCapturer.startCapture(width, height, fps);
+        Log.d(TAG, "UvcVideoCapturer.startCapture: " + width + "x" + height + "@" + fps);
+
+        String trackId = stateProvider.getNextTrackUUID();
+        mVideoCapturers.put(trackId, info);
+        mSurfaceTextureHelpers.put(trackId, surfaceTextureHelper);
+
+        VideoTrack videoTrack = pcFactory.createVideoTrack(trackId, videoSource);
+
+        ConstraintsArray audioTracks = new ConstraintsArray();
+        ConstraintsArray videoTracks = new ConstraintsArray();
+        ConstraintsMap successResult = new ConstraintsMap();
+
+        if (videoTrack != null) {
+            String id = videoTrack.id();
+
+            LocalVideoTrack localVideoTrack = new LocalVideoTrack(videoTrack);
+            videoSource.setVideoProcessor(localVideoTrack);
+
+            stateProvider.putLocalTrack(id, localVideoTrack);
+
+            ConstraintsMap track_ = new ConstraintsMap();
+            String kind = videoTrack.kind();
+
+            track_.putBoolean("enabled", videoTrack.enabled());
+            track_.putString("id", id);
+            track_.putString("kind", kind);
+            track_.putString("label", "USB Camera");
+            track_.putString("readyState", videoTrack.state().toString());
+            track_.putBoolean("remote", false);
+
+            videoTracks.pushMap(track_);
+            mediaStream.addTrack(videoTrack);
+        }
+
+        String streamId = mediaStream.getId();
+
+        Log.d(TAG, "USB Camera MediaStream id: " + streamId);
+        stateProvider.putLocalStream(streamId, mediaStream);
+        successResult.putString("streamId", streamId);
+        successResult.putArray("audioTracks", audioTracks.toArrayList());
+        successResult.putArray("videoTracks", videoTracks.toArrayList());
+
         result.success(successResult.toMap());
     }
 
