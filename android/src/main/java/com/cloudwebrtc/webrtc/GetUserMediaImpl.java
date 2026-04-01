@@ -49,7 +49,6 @@ import com.cloudwebrtc.webrtc.utils.MediaConstraintsUtils;
 import com.cloudwebrtc.webrtc.utils.ObjectType;
 import com.cloudwebrtc.webrtc.utils.PermissionUtils;
 import com.cloudwebrtc.webrtc.video.LocalVideoTrack;
-import com.cloudwebrtc.webrtc.video.UvcVideoCapturer;
 import com.cloudwebrtc.webrtc.video.VideoCapturerInfo;
 
 import android.hardware.usb.UsbDevice;
@@ -94,6 +93,22 @@ public class GetUserMediaImpl {
     private static final int DEFAULT_WIDTH = 1280;
     private static final int DEFAULT_HEIGHT = 720;
     private static final int DEFAULT_FPS = 30;
+
+    /**
+     * Interface for external video capturer providers.
+     * Allows app modules (e.g., UVC camera plugin) to supply a VideoCapturer
+     * without flutter-webrtc depending on app code directly.
+     */
+    public interface ExternalVideoCapturerProvider {
+        VideoCapturer createCapturer(String deviceId);
+    }
+
+    private static ExternalVideoCapturerProvider externalCapturerProvider;
+
+    public static void setExternalVideoCapturerProvider(ExternalVideoCapturerProvider provider) {
+        externalCapturerProvider = provider;
+        Log.d(TAG, "ExternalVideoCapturerProvider " + (provider != null ? "registered" : "cleared"));
+    }
 
     private static final String PERMISSION_AUDIO = Manifest.permission.RECORD_AUDIO;
     private static final String PERMISSION_VIDEO = Manifest.permission.CAMERA;
@@ -606,7 +621,8 @@ public class GetUserMediaImpl {
 
     /**
      * Gets video stream from USB camera (UVC device).
-     * Similar to getDisplayMedia but for USB cameras.
+     * Uses ExternalVideoCapturerProvider to obtain a VideoCapturer from the app module,
+     * keeping flutter-webrtc decoupled from app-specific UVC camera code.
      */
     void getUsbCameraMedia(
             final ConstraintsMap constraints,
@@ -615,6 +631,11 @@ public class GetUserMediaImpl {
             final UsbDevice usbDevice) {
 
         Log.d(TAG, "getUsbCameraMedia called");
+
+        if (externalCapturerProvider == null) {
+            resultError("getUsbCameraMedia", "No external video capturer provider registered", result);
+            return;
+        }
 
         // Get video constraints
         int width = DEFAULT_WIDTH;
@@ -634,11 +655,14 @@ public class GetUserMediaImpl {
             }
         }
 
-        // Create UVC VideoCapturer
-        VideoCapturer videoCapturer = new UvcVideoCapturer(applicationContext, usbDevice);
+        // Derive device ID from UsbDevice, or null for auto-select
+        String deviceId = usbDevice != null ? String.valueOf(usbDevice.getDeviceId()) : null;
+
+        // Create VideoCapturer via external provider (app's UvcVideoCapturerFactory)
+        VideoCapturer videoCapturer = externalCapturerProvider.createCapturer(deviceId);
 
         if (videoCapturer == null) {
-            resultError("getUsbCameraMedia", "Failed to create UVC camera capturer", result);
+            resultError("getUsbCameraMedia", "Failed to create USB camera capturer", result);
             return;
         }
 
@@ -660,7 +684,7 @@ public class GetUserMediaImpl {
         info.capturer = videoCapturer;
 
         videoCapturer.startCapture(width, height, fps);
-        Log.d(TAG, "UvcVideoCapturer.startCapture: " + width + "x" + height + "@" + fps);
+        Log.d(TAG, "UsbCamera.startCapture: " + width + "x" + height + "@" + fps);
 
         String trackId = stateProvider.getNextTrackUUID();
         mVideoCapturers.put(trackId, info);

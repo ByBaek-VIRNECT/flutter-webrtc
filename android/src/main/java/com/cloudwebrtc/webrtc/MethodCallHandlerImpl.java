@@ -1566,7 +1566,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
       return findFirstUvcCamera();
     }
 
-    UsbManager usbManager = (UsbManager) applicationContext.getSystemService(Context.USB_SERVICE);
+    UsbManager usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
     if (usbManager == null) {
       return null;
     }
@@ -1581,7 +1581,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
   }
 
   private UsbDevice findFirstUvcCamera() {
-    UsbManager usbManager = (UsbManager) applicationContext.getSystemService(Context.USB_SERVICE);
+    UsbManager usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
     if (usbManager == null) {
       return null;
     }

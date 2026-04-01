@@ -49,6 +49,15 @@ public class FlutterWebRTCPlugin implements FlutterPlugin, ActivityAware, EventC
 
     public static FlutterWebRTCPlugin sharedSingleton;
 
+    /**
+     * Register an external video capturer provider for USB camera support.
+     * Call this from app-level plugins (e.g., UvcCameraPlugin) during initialization.
+     */
+    public static void setExternalVideoCapturerProvider(
+            GetUserMediaImpl.ExternalVideoCapturerProvider provider) {
+        GetUserMediaImpl.setExternalVideoCapturerProvider(provider);
+    }
+
     public AudioProcessingController getAudioProcessingController() {
         return methodCallHandler.audioProcessingController;
     }

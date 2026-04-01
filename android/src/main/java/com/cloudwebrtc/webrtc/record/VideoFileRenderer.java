@@ -136,13 +136,19 @@ class VideoFileRenderer implements VideoSink, SamplesReadyCallback {
         CountDownLatch latch = new CountDownLatch(audioThreadHandler  != null ? 2 : 1);
         if (audioThreadHandler != null) {
             audioThreadHandler.post(() -> {
-                try{
+                try {
                     if (audioEncoder != null) {
                         audioEncoder.stop();
                         audioEncoder.release();
                     }
-                    audioThread.quit();
+                } catch (Exception e) {
+                    Log.e(TAG, "Error releasing audio encoder", e);
                 } finally {
+                    try {
+                        audioThread.quit();
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error quitting audio thread", e);
+                    }
                     latch.countDown();
                 }
             });
@@ -154,11 +160,27 @@ class VideoFileRenderer implements VideoSink, SamplesReadyCallback {
                     encoder.stop();
                     encoder.release();
                 }
+            } catch (Exception e) {
+                Log.e(TAG, "Error releasing video encoder", e);
+            }
+            try {
                 eglBase.release();
-                mediaMuxer.stop();
+            } catch (Exception e) {
+                Log.e(TAG, "Error releasing eglBase", e);
+            }
+            try {
+                if (muxerStarted) {
+                    mediaMuxer.stop();
+                }
                 mediaMuxer.release();
-                renderThread.quit();
+            } catch (Exception e) {
+                Log.e(TAG, "Error releasing mediaMuxer", e);
             } finally {
+                try {
+                    renderThread.quit();
+                } catch (Exception e) {
+                    Log.e(TAG, "Error quitting render thread", e);
+                }
                 latch.countDown();
             }
         });
@@ -271,8 +293,14 @@ class VideoFileRenderer implements VideoSink, SamplesReadyCallback {
                     // It's usually necessary to adjust the ByteBuffer values to match BufferInfo.
                     encodedData.position(audioBufferInfo.offset);
                     encodedData.limit(audioBufferInfo.offset + audioBufferInfo.size);
-                    if (muxerStarted)
+                    if (muxerStarted && isRunning) {
+                    try {
                         mediaMuxer.writeSampleData(audioTrackIndex, encodedData, audioBufferInfo);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error writing audio sample data", e);
+                        break;
+                    }
+                }
                     isRunning = isRunning && (audioBufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) == 0;
                     audioEncoder.releaseOutputBuffer(encoderStatus, false);
                     if ((audioBufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
@@ -291,6 +319,8 @@ class VideoFileRenderer implements VideoSink, SamplesReadyCallback {
         if (!isRunning)
             return;
         audioThreadHandler.post(() -> {
+            if (!isRunning)
+                return;
             if (audioEncoder == null) try {
                 audioEncoder = MediaCodec.createEncoderByType("audio/mp4a-latm");
                 MediaFormat format = new MediaFormat();

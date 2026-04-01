@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 
 import '../flutter_webrtc.dart';
+import 'native/mediadevices_impl.dart';
 
 class Helper {
   static Future<List<MediaDeviceInfo>> enumerateDevices(String type) async {
@@ -136,6 +137,27 @@ class Helper {
   ///
   static Future<MediaStream> openCamera(Map<String, dynamic> mediaConstraints) {
     return navigator.mediaDevices.getUserMedia(mediaConstraints);
+  }
+
+  /// Open USB camera (UVC device) and return a MediaStream.
+  ///
+  /// [mediaConstraints] - Video constraints (width, height, frameRate).
+  /// [devicePath] - Optional USB device path. If null, uses first available.
+  ///
+  /// Returns [MediaStream] with video track from USB camera.
+  static Future<MediaStream> openUsbCamera(
+    Map<String, dynamic> mediaConstraints, {
+    String? devicePath,
+  }) async {
+    if (kIsWeb) {
+      throw UnsupportedError('USB cameras are not supported on web');
+    }
+    // Import the native implementation
+    final mediaDevices = navigator.mediaDevices;
+    if (mediaDevices is MediaDeviceNative) {
+      return mediaDevices.getUsbCameraMedia(mediaConstraints, devicePath: devicePath);
+    }
+    throw UnsupportedError('USB cameras require native platform support');
   }
 
   /// Set the volume for Flutter native
