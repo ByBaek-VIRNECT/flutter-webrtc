@@ -69,6 +69,30 @@ class MediaDeviceNative extends MediaDevices {
     }
   }
 
+  /// Gets media stream from USB camera (UVC device).
+  Future<MediaStream> getUsbCameraMedia(
+      Map<String, dynamic> mediaConstraints,
+      {String? devicePath}) async {
+    try {
+      final response = await WebRTC.invokeMethod(
+        'getUsbCameraMedia',
+        <String, dynamic>{
+          'constraints': mediaConstraints,
+          'devicePath': devicePath,
+        },
+      );
+      if (response == null) {
+        throw Exception('getUsbCameraMedia return null, something wrong');
+      }
+      String streamId = response['streamId'];
+      var stream = MediaStreamNative(streamId, 'local');
+      stream.setMediaTracks(response['audioTracks'] ?? [], response['videoTracks'] ?? []);
+      return stream;
+    } on PlatformException catch (e) {
+      throw 'Unable to getUsbCameraMedia: ${e.message}';
+    }
+  }
+
   @override
   Future<List<dynamic>> getSources() async {
     try {

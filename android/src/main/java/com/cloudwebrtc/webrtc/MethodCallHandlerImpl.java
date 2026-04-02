@@ -11,6 +11,9 @@ import android.hardware.Camera.CameraInfo;
 import android.media.MediaRecorder;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceInfo;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbInterface;
+import android.hardware.usb.UsbManager;
 import android.os.Build;
 import android.util.Log;
 import android.util.LongSparseArray;
@@ -746,6 +749,13 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
         Map<String, Object> constraints = call.argument("constraints");
         ConstraintsMap constraintsMap = new ConstraintsMap(constraints);
         getDisplayMedia(constraintsMap, result);
+        break;
+      }
+      case "getUsbCameraMedia": {
+        Map<String, Object> constraints = call.argument("constraints");
+        String devicePath = call.argument("devicePath");
+        ConstraintsMap constraintsMap = new ConstraintsMap(constraints);
+        getUsbCameraMedia(constraintsMap, result, devicePath);
         break;
       }
       case "startRecordToFile":
@@ -1533,6 +1543,67 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
     }
 
     getUserMediaImpl.getDisplayMedia(constraints, result, mediaStream);
+  }
+
+  public void getUsbCameraMedia(ConstraintsMap constraints, Result result, String devicePath) {
+    String streamId = getNextStreamUUID();
+    MediaStream mediaStream = mFactory.createLocalMediaStream(streamId);
+
+    if (mediaStream == null) {
+      resultError("getUsbCameraMedia", "Failed to create new media stream", result);
+      return;
+    }
+
+    // Find USB device by path
+    UsbDevice usbDevice = findUsbDevice(devicePath);
+
+    getUserMediaImpl.getUsbCameraMedia(constraints, result, mediaStream, usbDevice);
+  }
+
+  private UsbDevice findUsbDevice(String devicePath) {
+    if (devicePath == null || devicePath.isEmpty()) {
+      // Return first available UVC camera
+      return findFirstUvcCamera();
+    }
+
+    UsbManager usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
+    if (usbManager == null) {
+      return null;
+    }
+
+    for (UsbDevice device : usbManager.getDeviceList().values()) {
+      if (device.getDeviceName().equals(devicePath)) {
+        return device;
+      }
+    }
+
+    return findFirstUvcCamera();
+  }
+
+  private UsbDevice findFirstUvcCamera() {
+    UsbManager usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
+    if (usbManager == null) {
+      return null;
+    }
+
+    for (UsbDevice device : usbManager.getDeviceList().values()) {
+      // UVC Video class = 239 (0xEF), subclass = 2
+      if (device.getDeviceClass() == 239 || hasVideoInterface(device)) {
+        return device;
+      }
+    }
+    return null;
+  }
+
+  private boolean hasVideoInterface(UsbDevice device) {
+    for (int i = 0; i < device.getInterfaceCount(); i++) {
+      UsbInterface intf = device.getInterface(i);
+      // Interface class 14 = Video
+      if (intf.getInterfaceClass() == 14) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public void getSources(Result result) {
