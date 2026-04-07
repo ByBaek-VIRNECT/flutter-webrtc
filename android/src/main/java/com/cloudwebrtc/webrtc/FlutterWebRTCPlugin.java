@@ -74,6 +74,10 @@ public class FlutterWebRTCPlugin implements FlutterPlugin, ActivityAware, EventC
         return methodCallHandler.getRemoteTrack(trackId);
     }
 
+    public boolean putLocalTrack(String trackId, LocalTrack track) {
+        return methodCallHandler != null && methodCallHandler.putLocalTrack(trackId, track);
+    }
+
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
         startListening(binding.getApplicationContext(), binding.getBinaryMessenger(),
